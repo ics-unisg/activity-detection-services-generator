@@ -1,0 +1,1 @@
+# activity-detection-services-generator
