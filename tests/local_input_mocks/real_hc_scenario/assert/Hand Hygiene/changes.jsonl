@@ -1,0 +1,2 @@
+{"timestamp":"2024-07-30 11:26:20.81","changes":[{"station":"HYGIENE_STATION","sensor":"s23xq_load_cell_weight","prev_value":"low","value":"high"}]}
+{"timestamp":"2024-07-30 11:26:21.86","changes":[{"station":"HYGIENE_STATION","sensor":"s23xq_load_cell_weight","prev_value":"high","value":"low"}]}

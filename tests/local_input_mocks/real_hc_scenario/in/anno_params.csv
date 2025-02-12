@@ -1,0 +1,3 @@
+annotation_id,activity_name,start,end,stations
+handhyg1,"Hand Hygiene",2024-07-30 11:26:19.00,2024-07-30 11:26:24.00,HYGIENE_STATION
+takoutsamp1,"Take Out Samples",2024-07-30 11:28:50.00,2024-07-30 11:28:53.00,HYGIENE_STATION-LEFT_DONATION

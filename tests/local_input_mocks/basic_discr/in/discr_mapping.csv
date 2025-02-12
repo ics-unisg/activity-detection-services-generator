@@ -1,0 +1,3 @@
+sensor,source,target
+o7_valve,<400,low
+o7_valve,>=400,high

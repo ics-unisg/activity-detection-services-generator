@@ -1,0 +1,45 @@
+@startuml
+actor User
+
+User -> User: Create annotations,\nprepare IoT data
+
+User -> DetAppGenerator: Supply //DAGConf//,\nwith fetchers\nand detection instances
+activate DetAppGenerator
+
+box "Input Processing" #LightBlue
+DetAppGenerator -> InputProcessor: //Fetchers//
+activate InputProcessor
+InputProcessor -> "Data Fetchers"
+activate "Data Fetchers"
+"Data Fetchers" -> InputProcessor
+deactivate "Data Fetchers"
+InputProcessor -> DetAppGenerator: //Activities//,\n//Discretization//
+deactivate InputProcessor
+end box
+
+box "Output Generation" #LightGreen
+DetAppGenerator -> OutputProducer: //Activities//,\n//Discretization//,\n//Detection instances//
+deactivate DetAppGenerator
+activate OutputProducer
+OutputProducer -> Signature
+activate Signature
+Signature -> OutputProducer
+deactivate Signature
+OutputProducer -> Changes
+activate Changes
+Changes -> OutputProducer
+deactivate Changes
+OutputProducer -> SiddhiWriter
+activate SiddhiWriter
+SiddhiWriter -> InstanceLevelDetQueries
+activate InstanceLevelDetQueries
+InstanceLevelDetQueries -> SiddhiWriter
+deactivate InstanceLevelDetQueries
+SiddhiWriter -> OutputProducer
+deactivate SiddhiWriter
+OutputProducer -> User: Detection apps,\nsignature files,\nchanges files
+deactivate OutputProducer
+end box
+
+
+@enduml

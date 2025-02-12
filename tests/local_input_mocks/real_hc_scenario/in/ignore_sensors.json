@@ -1,0 +1,17 @@
+{
+  "general": [
+    "X2n_air_quality_air_pressure",
+    "X2n_air_quality_humidity"
+  ],
+  "Hand Hygiene": [
+    "X2n_air_quality_temp",
+    "air_quality_iaq",
+    "s22Pa_nfc_status"
+  ],
+  "Take Out Samples": [
+     "X2n_air_quality_temp",
+     "air_quality_iaq",
+      "VDY_accel_x",
+      "VDY_accel_y"
+  ]
+}

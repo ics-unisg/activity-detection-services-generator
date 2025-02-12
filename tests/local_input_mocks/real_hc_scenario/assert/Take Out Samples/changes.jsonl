@@ -1,0 +1,2 @@
+{"timestamp":"2024-07-30 11:28:51.69","changes":[{"station":"HYGIENE_STATION","sensor":"SeG_ir_long_distance","prev_value":"low","value":"medium"}, {"station": "LEFT_DONATION", "sensor": "VDY_accel_z", "prev_value": "baseline", "value": "direction1"}]}
+{"timestamp":"2024-07-30 11:28:52.51","changes":[{"station": "LEFT_DONATION", "sensor": "VDY_accel_z", "prev_value": "direction1", "value": "direction2"}]}

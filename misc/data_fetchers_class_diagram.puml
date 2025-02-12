@@ -1,0 +1,36 @@
+@startuml
+
+
+class InputProcessor <<Mediator>> {
+}
+abstract class AnnotationParamFetcher <<Strategy>> {
++ {abstract} get_annotation_params()\n\t-> List[AnnotationParams]
+}
+
+abstract class IgnoreSensorFetcher <<Strategy>> {
++ {abstract} get_ignore_sensors()\n\t-> Dict[str, List[str]]
+}
+
+abstract class DiscretizationFetcher <<Strategy>> {
++ {abstract} get_discretization() -> Discretization
+}
+
+abstract class SignatureFetcher <<Strategy>> {
++ {abstract} get_signature(\n\tannotation_params: AnnotationParams,\n\tignore_sensors: Dict[str, List[str]],\n\tsampling_freq: float\n) -> Signature
+}
+
+
+
+InputProcessor ..> AnnotationParamFetcher : delegates
+InputProcessor ..> IgnoreSensorFetcher : delegates
+InputProcessor ..> DiscretizationFetcher : delegates
+InputProcessor ..> SignatureFetcher : delegates
+
+IgnoreSensorFetcher <|-- LocalIgnoreSensorFetcher
+IgnoreSensorFetcher <|-- GrafanaFetcher
+AnnotationParamFetcher <|-- GrafanaFetcher
+SignatureFetcher <|-- InfluxFetcher
+SignatureFetcher <|-- LocalSignatureFetcher
+AnnotationParamFetcher <|-- LocalAnnotationParamFetcher
+DiscretizationFetcher <|-- LocalDiscretizationFetcher
+@enduml
