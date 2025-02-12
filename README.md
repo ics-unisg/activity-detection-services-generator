@@ -56,10 +56,6 @@ Possible (non-exhaustive list) contributions include:
 
 For more information on contributing, please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
-## Links
-- Usage example and evaluation for a publication can be found here: ZENODO LINK
-- Archived version (for the evaluation) can be found here: ZENODO LINK, DOI: 
-
 ## Grafana Annotation Guidelines
 Generates CEP apps and signatures based on Grafana annotations.
 Annotation rules:
