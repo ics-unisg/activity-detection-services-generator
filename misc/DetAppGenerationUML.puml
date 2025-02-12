@@ -1,0 +1,141 @@
+@startuml
+
++class DAGConfig <<Parameter Object, Immutable>> {
+  + ActiveFeatures active_features
+  + SourceDestConfig source_dest_conf
+  + SiddhiConfig siddhi_config
+  + str annotation_param_fetcher
+  + str signature_fetcher
+  + str ignore_sensor_fetcher
+  + str discretization_fetcher
+}
+
+class DetAppGenerator <<Mediator>> {
+ DetAppGenerator(DAGConfig conf)
+ +run()
+}
+
+Activity "produces" <.. InputProcessor
+Discretization "produces" <.. InputProcessor
+Activity "used by" ..> OutputProducer
+DetAppGenerator ..> DAGConfig
+
+class InputProcessor <<Mediator, Template Method>> {
++InputProcessor(DAGConfig dag_conf)
++List[Activity] get_activities()
++Discretization get_discretization()
+}
+
+class Discretization <<Builder>> {
++Discretization()
++any discretize(str sensor, any value)
++type discretized_type(str sensor)
++none add_discretization_item(str sensor, float beg,
+float to,  bool beg_incl, bool to_incl, any target_value)
+}
+
+
+class OutputProducer <<Mediator>> {
+ +OutputProducer(Discretization, DAGConfig)
+ +writeSignature(Activity)
+ +writeApp(Activity)
+ +writeChanges(Activity)
+}
+
+class Activity <<Dataclass>> {
++Actvity(AnnotionParams, Signature, Dict sensors_to_ignore)
+}
+
+DetAppGenerator --> InputProcessor : delegates
+DetAppGenerator *--"many" Activity
+DetAppGenerator --> OutputProducer : delegates
+
+
+InputProcessor --> SignatureFetcher : delegates
+InputProcessor --> DiscretizationFetcher : delegates
+InputProcessor --> AnnotationParamFetcher : delegates
+InputProcessor --> IgnoreSensorFetcher : delegates
+
+abstract class AnnotationParamFetcher {
+ + AnnotationParamFetcher(SourceDestConfig)
+ + List[AnnotationParams] get_activity_params()
+}
+
+abstract class IgnoreSensorFetcher {
+ + AnnotationParamFetcher(SourceDestConfig)
+ + Dict get_ignore_sensors()
+}
+
+abstract class DiscretizationFetcher {
+ + DiscretizationFetcher(SourceDestConfig)
+ + Discretization get_discretization()
+}
+abstract class SignatureFetcher {
+ +TSDataFetcher(DAGConfig)
+ + Signature getSignature(AnnotationParams ann_param, Dict ignoresensors)
+}
+
+class Signature <<Builder>> {
++Signature(str activity_name, str annotation_id)
++Dict get_sigs_by_ts_res()
++None add_signature_item(SignatureItem sig_item)
++None create_signature_file()
++Dict get_exemplary_datapoints_per_resource()
+}
+
+class Changes {
++Changes(List[Signature], Discretization)
++List[datetime] timestamps
++List[Change] get_changes()
++List[str] get_stations_at_ts(str)
++List[Change] get_changes_by_ts_station(datetime, str)
++int get_ts_counter(datetime)
+}
+
+Activity *-- AnnotationParams
+DetAppGenerator *-- "one" Discretization
+Activity *-- "one or many" Signature
+Activity *-- "one" Changes
+Signature <-- Changes : "depends on"
+
+class AnnotationParams {
+ str name
+ List[str]str stations
+ str start
+ str end
+ str grafana_dashboard_url
+ str annotation_id
+}
+
+class GrafanaFetcher implements AnnotationParamFetcher
+class GrafanaFetcher implements IgnoreSensorFetcher
+class LocalDiscretizaionFetcher implements DiscretizationFetcher
+class InfluxFetcher implements SignatureFetcher
+class LocalAnnotationParamFetcher implements AnnotationParamFetcher
+class LocalIgnoreSensorFetcher implements IgnoreSensorFetcher
+class LocalSignatureFetcher implements SignatureFetcher
+
+
+OutputProducer --> SiddhiWriter : delegates
+
+class SiddhiWriter{
+ + writeSiddhiApp()
+ + SiddhiWriter(List[IntanceLevelDetQuery], Activity, Discretization, DAGConfig)
+}
+
+
+
+SiddhiWriter -- IntanceLevelDetQuery
+
+abstract class IntanceLevelDetQuery <<Strategy Pattern>> {
+  + generate(int num_changes, str act_name)
+}
+
+class All50HLDetQuery extends IntanceLevelDetQuery
+class First50HLDetQuery extends IntanceLevelDetQuery
+class FirstLastLLDetQuery extends IntanceLevelDetQuery
+class Any25LLDetQuery extends IntanceLevelDetQuery
+class Any50LLDetQuery extends IntanceLevelDetQuery
+class Any75LLDetQuery extends IntanceLevelDetQuery
+
+@enduml

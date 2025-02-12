@@ -1,0 +1,100 @@
+@App:name('DetectHandHygieneApp')
+
+@source(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.HYGIENE_STATION.Hand Hygiene', topic = 'mockpref/HYGIENE_STATION', username = 'mockuser', password = 'mockpw',
+@map(type = 'json', @attributes(timestamp = '$.timestamp', SeG_ir_long_distance = '$.SeG_ir_long_distance', s22Pa_nfc_tag = '$.s22Pa_nfc_tag', s23UU_button_state = '$.s23UU_button_state', s23xq_load_cell_weight = '$.s23xq_load_cell_weight')))
+define stream HYGIENE_STATIONStream(timestamp string, SeG_ir_long_distance float, s22Pa_nfc_tag int, s23UU_button_state int, s23xq_load_cell_weight int);
+
+define stream HYGIENE_STATIONStreamDisc(timestamp string, SeG_ir_long_distance string, s22Pa_nfc_tag int, s23UU_button_state int, s23xq_load_cell_weight string);
+
+@sink(type = 'log', prefix = 'LowLevel Log', priority = 'INFO')
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.HYGIENE_STATION.Hand Hygiene.ll', topic = 'ActivityEvents/LowLevel', username = 'mockuser', password = 'mockpw', @map(type = 'json'))
+define Stream DetectedLowLevelActivityEvents(event string, activity string, ts_first string, ts_second string, ll_pattern_num int);
+
+@sink(type = 'log', prefix = 'HighLevel Log', priority = 'INFO')
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.HYGIENE_STATION.Hand Hygiene.hl', topic = 'ActivityEvents/HighLevel', username = 'mockuser', password = 'mockpw', @map(type = 'json'))
+define Stream DetectedHighLevelActivityEvents(event string, next_pattern string, activity string, ts_first string, ts_second string);
+
+@sink(type = 'log', prefix = 'InstanceLevel Log', priority = 'INFO')
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.HYGIENE_STATION.Hand Hygiene.il.start', topic = 'DefaultBase/DefaultSource/DefaultCase/Hand Hygiene', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload("""{"lifecycle:transition":"start","time:timestamp":"{{ts_start}}", "detection:type": "{{detection_type}}"}""")))
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.HYGIENE_STATION.Hand Hygiene.il.complete', topic = 'DefaultBase/DefaultSource/DefaultCase/Hand Hygiene', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload("""{"lifecycle:transition":"complete","time:timestamp":"{{ts_end}}", "detection:type": "{{detection_type}}"}""")))
+define Stream DetectedInstanceLevelActivities(activity string, detection_type string, ts_start string, ts_start_unix long, ts_end string, ts_end_unix long);
+
+@info(name = 'HYGIENE_STATIONDiscSourceMapper')
+from HYGIENE_STATIONStream
+select timestamp as timestamp, ifThenElse(SeG_ir_long_distance < 50.0, 'low', ifThenElse(SeG_ir_long_distance >= 50.0 and SeG_ir_long_distance <= 120.0, 'medium', ifThenElse(SeG_ir_long_distance > 120.0, 'high', 'ERROR'))) as SeG_ir_long_distance, s22Pa_nfc_tag as s22Pa_nfc_tag, s23UU_button_state as s23UU_button_state, ifThenElse(s23xq_load_cell_weight <= 300.0, 'low', ifThenElse(s23xq_load_cell_weight > 300.0, 'high', 'ERROR')) as s23xq_load_cell_weight
+insert into HYGIENE_STATIONStreamDisc;
+
+@info(name="HighToLow-Helper")
+from every e1 = DetectedLowLevelActivityEvents, e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num >= e2.ll_pattern_num]
+select "HighToLow" as event
+insert into HelperStream;
+
+@info(name="Detect-LowLevel-Pattern-1")
+from every e1 = HYGIENE_STATIONStreamDisc, e2 = HYGIENE_STATIONStreamDisc[(e1.s23xq_load_cell_weight=='low' and e2.s23xq_load_cell_weight=='high')]
+select "LowLevel-Pattern-1" as event, "Hand Hygiene" as activity, e1.timestamp as ts_first, e2.timestamp as ts_second, 1 as ll_pattern_num
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-1")
+from DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"]
+select "HighLevel-Pattern-1" as event,  "LowLevel-Pattern-2" as next_pattern, "Hand Hygiene" as activity, ts_first, ts_second
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="Detect-LowLevel-Pattern-2")
+from every e1 = HYGIENE_STATIONStreamDisc, e2 = HYGIENE_STATIONStreamDisc[(e1.s23xq_load_cell_weight=='high' and e2.s23xq_load_cell_weight=='low')]
+select "LowLevel-Pattern-2" as event, "Hand Hygiene" as activity, e1.timestamp as ts_first, e2.timestamp as ts_second, 2 as ll_pattern_num
+insert into DetectedLowLevelActivityEvents;
+
+@info(name="Detect-HighLevel-Pattern-2")
+from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not HelperStream[event == "HighToLow"] and e2 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2" and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
+select "HighLevel-Pattern-2" as event,  "LowLevel-Pattern-3" as next_pattern, "Hand Hygiene" as activity, e2.ts_first as ts_first, e2.ts_second as ts_second
+insert into DetectedHighLevelActivityEvents;
+
+@info(name="Detect-AllHighLevelPattern-InstanceLevelActivity")
+from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not HelperStream[event == "HighToLow"] and e2 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"]
+select "Hand Hygiene" as activity, "AllHighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-First50HighLevelPattern-InstanceLevelActivity")
+from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"]
+select "Hand Hygiene" as activity, "First50HighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e1.ts_second as ts_end, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-FirstLastLowLevelPattern-InstanceLevelActivity")
+from every e1 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"] -> not HelperStream[event == "HighToLow"] and e2 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2"]
+select "Hand Hygiene" as activity, "FirstLastLowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-Any25LowLevelPattern-InstanceLevelActivity-Startup")
+from e1 = DetectedLowLevelActivityEvents
+select "Hand Hygiene" as activity, "Any25LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e1.ts_second as ts_end, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-Any25LowLevelPattern-InstanceLevelActivity")
+from every e1 = DetectedLowLevelActivityEvents,
+	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num >= ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
+select "Hand Hygiene" as activity, "Any25LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-Any50LowLevelPattern-InstanceLevelActivity-Startup")
+from e1 = DetectedLowLevelActivityEvents
+select "Hand Hygiene" as activity, "Any50LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e1.ts_second as ts_end, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-Any50LowLevelPattern-InstanceLevelActivity")
+from every e1 = DetectedLowLevelActivityEvents,
+	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num >= ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
+select "Hand Hygiene" as activity, "Any50LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-Any75LowLevelPattern-InstanceLevelActivity-Startup")
+from e1 = DetectedLowLevelActivityEvents,
+	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
+select "Hand Hygiene" as activity, "Any75LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;
+
+@info(name="Detect-Any75LowLevelPattern-InstanceLevelActivity")
+from every e1 = DetectedLowLevelActivityEvents,
+	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num >= ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
+	e3 = DetectedLowLevelActivityEvents[e2.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
+select "Hand Hygiene" as activity, "Any75LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e3.ts_second as ts_end, time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+insert into DetectedInstanceLevelActivities;

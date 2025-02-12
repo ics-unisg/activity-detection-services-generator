@@ -1,0 +1,6 @@
+{"timestamp":"2023-02-06 14:00:01.00","changes":[{"station":"stat1","sensor":"m1_speed","prev_value":0,"value":-512},{"station":"stat1","sensor":"o7_valve","prev_value":0,"value":512}]}
+{"timestamp":"2023-02-06 14:00:02.00","changes":[{"station":"stat1","sensor":"i1_pos_switch","prev_value":0,"value":1},{"station":"stat1","sensor":"m1_speed","prev_value":-512,"value":0}]}
+{"timestamp":"2023-02-06 14:00:04.00","changes":[{"station":"stat1","sensor":"o7_valve","prev_value":512,"value":0}]}
+{"timestamp":"2023-02-06 14:00:09.00","changes":[{"station":"stat1","sensor":"i1_pos_switch","prev_value":1,"value":0},{"station":"stat1","sensor":"m1_speed","prev_value":0,"value":512},{"station":"stat1","sensor":"o7_valve","prev_value":0,"value":512}]}
+{"timestamp":"2023-02-06 14:00:11.00","changes":[{"station":"stat1","sensor":"i2_pos_switch","prev_value":0,"value":1},{"station":"stat1","sensor":"m1_speed","prev_value":512,"value":0}]}
+{"timestamp":"2023-02-06 14:00:12.00","changes":[{"station":"stat1","sensor":"i2_pos_switch","prev_value":1,"value":0},{"station":"stat1","sensor":"o7_valve","prev_value":512,"value":0}]}

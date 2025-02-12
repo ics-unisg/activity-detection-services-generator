@@ -1,0 +1,46 @@
+@startuml
+
+class Discretization <<Builder>> {
+}
+
+class Activity {
++ Activity(\n\tannotation_params: AnnotationParams,\n\tsignatures: List[Signature],\n\tsensors_to_ignore: List[str]\n)
++ get_changes(discretization: Discretization)\n\t-> Changes
+}
+
+class AnnotationParams {
++ annotation_id: str
++ activity_name: str
++ start: datetime
++ end: datetime
++ stations: List[str]
+}
+
+class Changes {
++ Changes(\n\tsignatures: List[Signature],\n\tdiscretization: Discretization,\n\tsensors_to_ignore: List[str]\n)
+}
+
+class Signature <<Builder>> {
+}
+
+class SignatureBuilder {
++ add_signature_item(\n\tit: SignatureItem\n)-> None
++ build() -> Signature
+}
+
+Signature .> SignatureBuilder
+
+class DiscretizationBuilder {
++ add_discretization_item(\n\tsensor: str,\n\tbeg: float,\n\tto: float,\n\tbeg_incl: bool,\n\tto_incl: bool,\n\ttarget_value:\n\t\tUnion[str, int, float, bool]\n) -> None
++ build() -> Discretization
+}
+
+Discretization .> DiscretizationBuilder
+
+Activity "1" *-- "1" AnnotationParams
+Activity "1" *-- "1...*" Signature
+Activity "1" *-- "1" Changes
+Changes ..> Signature
+Changes ..> Discretization
+
+@enduml

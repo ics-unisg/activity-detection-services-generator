@@ -1,0 +1,13 @@
+{"timestamp": "2023-02-06 14:00:00.00", "measurements": [{"station": "stat1", "i1_pos_switch": 0, "i5_light_barrier": 1, "o7_valve": 0, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:01.00", "measurements": [{"station": "stat1", "i1_pos_switch": 0, "i5_light_barrier": 1, "o7_valve": 512, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:02.00", "measurements": [{"station": "stat1", "i1_pos_switch": 1, "i5_light_barrier": 1, "o7_valve": 512, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:03.00", "measurements": [{"station": "stat1", "i1_pos_switch": 1, "i5_light_barrier": 1, "o7_valve": 512, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:04.00", "measurements": [{"station": "stat1", "i1_pos_switch": 1, "i5_light_barrier": 1, "o7_valve": 0, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:05.00", "measurements": [{"station": "stat1", "i1_pos_switch": 1, "i5_light_barrier": 1, "o7_valve": 0, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:06.00", "measurements": [{"station": "stat1", "i1_pos_switch": 1, "i5_light_barrier": 1, "o7_valve": 0, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:07.00", "measurements": [{"station": "stat1", "i1_pos_switch": 1, "i5_light_barrier": 1, "o7_valve": 0, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:08.00", "measurements": [{"station": "stat1", "i1_pos_switch": 1, "i5_light_barrier": 1, "o7_valve": 0, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:09.00", "measurements": [{"station": "stat1", "i1_pos_switch": 0, "i5_light_barrier": 1, "o7_valve": 512, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:10.00", "measurements": [{"station": "stat1", "i1_pos_switch": 0, "i5_light_barrier": 1, "o7_valve": 512, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:11.00", "measurements": [{"station": "stat1", "i1_pos_switch": 0, "i5_light_barrier": 1, "o7_valve": 512, "o8_compressor": 0}]}
+{"timestamp": "2023-02-06 14:00:12.00", "measurements": [{"station": "stat1", "i1_pos_switch": 0, "i5_light_barrier": 1, "o7_valve": 0, "o8_compressor": 0}]}

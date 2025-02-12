@@ -1,0 +1,84 @@
+@startuml
+
+class DAGConfig <<Parameter Object>> {
+}
+
+class DetAppGenerator <<Mediator>> {
+}
+
+package "input_processor" {
+class InputProcessor <<Mediator>> {
+}
+abstract class AnnotationParamFetcher <<Strategy>> {
+}
+
+abstract class IgnoreSensorFetcher <<Strategy>> {
+}
+
+abstract class DiscretizationFetcher <<Strategy>> {
+}
+
+abstract class SignatureFetcher <<Strategy>> {
+}
+}
+
+package "representations" {
+class Discretization <<Builder>> {
+}
+
+
+
+class Activity <<Dataclass>> {
+}
+
+
+
+class AnnotationParams {
+}
+
+class Changes {
+}
+
+class Signature <<Builder>> {
+}
+}
+
+package "output_producer" {
+
+class OutputProducer <<Mediator>> {
+}
+
+class SiddhiWriter {
+}
+
+abstract class InstanceLevelDetQuery <<Strategy>> {
+}
+}
+
+Activity "1" *-- "1" AnnotationParams
+Activity "1" *-- "1...*" Signature
+Activity "1" *-- "1" Changes
+Changes ..> Signature
+Changes ..> Discretization
+
+DetAppGenerator ..> InputProcessor : delegates
+DetAppGenerator ..> OutputProducer : delegates
+DetAppGenerator "1" o. "1" DAGConfig
+
+
+InputProcessor .> AnnotationParamFetcher : delegates
+InputProcessor ..> IgnoreSensorFetcher : delegates
+InputProcessor ..> DiscretizationFetcher : delegates
+InputProcessor ..> SignatureFetcher : delegates
+
+OutputProducer ..> SiddhiWriter : delegates
+
+SiddhiWriter ..> InstanceLevelDetQuery: delegates
+
+InputProcessor ...> Activity : produces
+InputProcessor ..> Discretization : produces
+
+OutputProducer ..> Activity : uses
+OutputProducer ..> Discretization : uses
+
+@enduml
