@@ -54,6 +54,8 @@ Possible (non-exhaustive list) contributions include:
 - Adding new features (e.g. support for more complex patterns, multiple signatures per activity, etc.)
 - Adding new output writers besides Siddhi (for other CEP platforms)
 
+For more information on contributing, please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+
 ## Links
 - Usage example and evaluation for a publication can be found here: ZENODO LINK
 - Archived version (for the evaluation) can be found here: ZENODO LINK, DOI: 
