@@ -60,7 +60,7 @@ select "LowLevel-Pattern-2" as event, "paper act" as activity, e1.timestamp as t
 insert into DetectedLowLevelActivityEvents;
 
 @info(name="Detect-HighLevel-Pattern-2")
-from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not HelperStream[event == "HighToLow"] and e2 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2" and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
+from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and e2 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-2" and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
 select "HighLevel-Pattern-2" as event,  "LowLevel-Pattern-3" as next_pattern, "paper act" as activity, e2.ts_first as ts_first, e2.ts_second as ts_second
 insert into DetectedHighLevelActivityEvents;
 
@@ -70,12 +70,12 @@ select "LowLevel-Pattern-3" as event, "paper act" as activity, e1.timestamp as t
 insert into DetectedLowLevelActivityEvents;
 
 @info(name="Detect-HighLevel-Pattern-3")
-from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"] -> not HelperStream[event == "HighToLow"] and e2 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-3" and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
+from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-2"] -> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and e2 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-3" and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
 select "HighLevel-Pattern-3" as event,  "LowLevel-Pattern-4" as next_pattern, "paper act" as activity, e2.ts_first as ts_first, e2.ts_second as ts_second
 insert into DetectedHighLevelActivityEvents;
 
 @info(name="Detect-AllHighLevelPattern-InstanceLevelActivity")
-from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not HelperStream[event == "HighToLow"] and e2 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
+from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and e2 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
 select "paper act" as activity, "AllHighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
 insert into DetectedInstanceLevelActivities;
 """
@@ -133,8 +133,10 @@ annotation_params = AnnotationParams(annotation_id="ann1",
                                      end=datetime.fromisoformat("2021-01-01T00:05:00"))
 activity = Activity(annotation_params, [signature], [])
 db = DiscretizationBuilder()
-db.add_discretization_item("i1_pos_switch", float("-inf"), 0, True, True, "off")
-db.add_discretization_item("i1_pos_switch", 0, float("inf"), False, True, "on")
+db.add_discretization_item(sensor="i1_pos_switch", beg=float("-inf"), to=0,
+                           to_incl=True, beg_incl=True, target_value="off")
+db.add_discretization_item(sensor="i1_pos_switch", beg=0, to=float("inf"),
+                           beg_incl=False, to_incl=True, target_value="on")
 discr = db.build()
 
 

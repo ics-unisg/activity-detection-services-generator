@@ -96,51 +96,71 @@ class LocalDiscretizationFetcher(DiscretizationFetcher):
             if source[:2] == "<=":
                 l_bound = float("-inf")
                 u_bound = float(source[2:])
-                discretization_builder.add_discretization_item(sensor, l_bound,
-                                                               u_bound, True, True,
-                                                               target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=l_bound,
+                                                               to=u_bound,
+                                                               beg_incl=True,
+                                                               to_incl=True,
+                                                               target_value=target_casted)
             elif source[:2] == ">=":
                 l_bound = float(source[2:])
                 u_bound = float("inf")
-                discretization_builder.add_discretization_item(sensor, l_bound, u_bound,
-                                                               True, True,
-                                                               target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=l_bound,
+                                                               to=u_bound,
+                                                               beg_incl=True,
+                                                               to_incl=True,
+                                                               target_value=target_casted)
             elif source[0] == "<":
                 l_bound = float("-inf")
                 u_bound = float(source[1:])
-                discretization_builder.add_discretization_item(sensor, l_bound, u_bound,
-                                                               True, False,
-                                                               target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=l_bound,
+                                                               to=u_bound,
+                                                               beg_incl=True,
+                                                               to_incl=False,
+                                                               target_value=target_casted)
             elif source[0] == ">":
                 l_bound = float(source[1:])
                 u_bound = float("inf")
-                discretization_builder.add_discretization_item(sensor, l_bound, u_bound,
-                                                               False, True,
-                                                               target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=l_bound,
+                                                               to=u_bound,
+                                                               beg_incl=False,
+                                                               to_incl=True,
+                                                               target_value=target_casted)
             elif source[0] == "[" and source[-1] == "]":
                 bounds = source[1:-1].split(",")
-                discretization_builder.add_discretization_item(sensor, float(bounds[0]),
-                                                               float(bounds[1]),
-                                                               True,
-                                                               True, target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=float(bounds[0]),
+                                                               to=float(bounds[1]),
+                                                               beg_incl=True,
+                                                               to_incl=True,
+                                                               target_value=target_casted)
             elif source[0] == "[" and source[-1] == "[":
                 bounds = source[1:-1].split(",")
-                discretization_builder.add_discretization_item(sensor, float(bounds[0]),
-                                                               float(bounds[1]),
-                                                               True,
-                                                               False, target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=float(bounds[0]),
+                                                               to=float(bounds[1]),
+                                                               beg_incl=True,
+                                                               to_incl=False,
+                                                               target_value=target_casted)
             elif source[0] == "]" and source[-1] == "]":
                 bounds = source[1:-1].split(",")
-                discretization_builder.add_discretization_item(sensor, float(bounds[0]),
-                                                               float(bounds[1]),
-                                                               False,
-                                                               True, target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=float(bounds[0]),
+                                                               to=float(bounds[1]),
+                                                               beg_incl=False,
+                                                               to_incl=True,
+                                                               target_value=target_casted)
             elif source[0] == "]" and source[-1] == "[":
                 bounds = source[1:-1].split(",")
-                discretization_builder.add_discretization_item(sensor, float(bounds[0]),
-                                                               float(bounds[1]),
-                                                               False,
-                                                               False, target_casted)
+                discretization_builder.add_discretization_item(sensor=sensor,
+                                                               beg=float(bounds[0]),
+                                                               to=float(bounds[1]),
+                                                               beg_incl=False,
+                                                               to_incl=False,
+                                                               target_value=target_casted)
             else:
                 raise ValueError(f"Source {source} for sensor {sensor} is not valid.")
         # make sure that the whole range is covered

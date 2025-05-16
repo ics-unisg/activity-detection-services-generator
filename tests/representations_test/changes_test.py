@@ -37,10 +37,10 @@ add_many(mock_signature_builder, "temp_sens",
          [dt0, dt1, dt2, dt3, dt4], [1.4, 1.2, 7.9, 10.2, 20.1])
 mock_signature2 = mock_signature_builder.build()
 mock_discretization_builder = DiscretizationBuilder()
-mock_discretization_builder.add_discretization_item("temp_sens", float("-inf"), 9,
-                                                    True, True, "low")
-mock_discretization_builder.add_discretization_item("temp_sens", 9, float("inf"),
-                                                    False, True, "high")
+mock_discretization_builder.add_discretization_item(sensor="temp_sens", beg=float("-inf"), to=9,
+                                                    beg_incl=True, to_incl=True, target_value="low")
+mock_discretization_builder.add_discretization_item(sensor="temp_sens", beg=9, to=float("inf"),
+                                                    beg_incl=False, to_incl=True, target_value="high")
 mock_discretization = mock_discretization_builder.build()
 
 

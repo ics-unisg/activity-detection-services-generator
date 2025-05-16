@@ -215,7 +215,7 @@ def query_hlstream(activity_params: AnnotationParams,
     if counter > 1:
         quer += (f'from every e1 = DetectedHighLevelActivityEvents[event == '
                  f'"HighLevel-Pattern-{counter - 1}"] '
-                 f'-> not HelperStream[event == "HighToLow"] and '
+                 f'-> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and '
                  f'e2 = DetectedLowLevelActivityEvents[event '
                  f'== "LowLevel-Pattern-{counter}" '
                  f'and time:timestampInMilliseconds(e1.ts_second, \'yyyy-MM-dd HH:mm:ss.SS\') '
@@ -256,7 +256,7 @@ def get_time_from_hz(sampling_freq: float) -> str:
 
 
 # pylint: disable=too-many-arguments
-def low_high_level_pattern_case_multi(timestamp: datetime,
+def low_high_level_pattern_case_multi(*, timestamp: datetime,
                                       changes: Changes,
                                       activity_params: AnnotationParams,
                                       counter: int,
@@ -342,12 +342,12 @@ def create_low_high_level_pattern_queries(changes: Changes,
                                                          counter,
                                                          siddhi_config))
         else:
-            queries.append(low_high_level_pattern_case_multi(timestamp,
-                                                             changes,
-                                                             activity_params,
-                                                             counter,
-                                                             sampling_freq,
-                                                             siddhi_config))
+            queries.append(low_high_level_pattern_case_multi(timestamp=timestamp,
+                                                             changes=changes,
+                                                             activity_params=activity_params,
+                                                             counter=counter,
+                                                             sampling_freq=sampling_freq,
+                                                             siddhi_config=siddhi_config))
 
         # High-Level Pattern queries
         queries.append(query_hlstream(

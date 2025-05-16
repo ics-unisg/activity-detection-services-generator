@@ -68,7 +68,7 @@ class DiscretizationBuilder():
 
     # pylint: disable=too-many-arguments
     def _check_overlapping_mapping_range(self,
-                                         sensor: str,
+                                         *, sensor: str,
                                          l_bound: float,
                                          u_bound: float,
                                          l_bound_type: str,
@@ -92,13 +92,17 @@ class DiscretizationBuilder():
             raise ValueError(f"Sensor {sensor} already has a mapping for {u_bound}")
 
     # pylint: disable=too-many-arguments
-    def add_discretization_item(self, sensor: str,
+    def add_discretization_item(self,
+                                *, sensor: str,
                                 beg: float, to: float,
                                 beg_incl: bool, to_incl: bool,
                                 target_value: Union[str, int, float, bool]) -> None:
         """ Add an item to the discretization mapping. """
-        self._check_overlapping_mapping_range(sensor, beg, to, "incl" if beg_incl else "excl",
-                                              "incl" if to_incl else "excl")
+        self._check_overlapping_mapping_range(sensor=sensor,
+                                              l_bound=beg,
+                                              u_bound=to,
+                                              l_bound_type="incl" if beg_incl else "excl",
+                                              u_bound_type="incl" if to_incl else "excl")
         if sensor not in self._discretization_map:
             self._discretization_map[sensor] = {}
         beg_incl_str = "incl" if beg_incl else "excl"
