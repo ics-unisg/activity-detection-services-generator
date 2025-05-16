@@ -74,8 +74,10 @@ def test_paper():
                                          end=datetime.fromisoformat("2021-01-01T00:05:00"))
     activity = Activity(annotation_params, [signature], [])
     db = DiscretizationBuilder()
-    db.add_discretization_item("i1_pos_switch", float("-inf"), 0, True, True, "off")
-    db.add_discretization_item("i1_pos_switch", 0, float("inf"), False, True, "on")
+    db.add_discretization_item(sensor="i1_pos_switch", beg=float("-inf"), to=0,
+                               beg_incl=True, to_incl=True, target_value="off")
+    db.add_discretization_item(sensor="i1_pos_switch", beg=0, to=float("inf"),
+                               beg_incl=False, to_incl=True, target_value="on")
     sp = SiddhiProducer([AllHighLevelPatternQuery()],
                         activity,
                         db.build(),

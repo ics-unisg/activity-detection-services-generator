@@ -256,7 +256,7 @@ def get_time_from_hz(sampling_freq: float) -> str:
 
 
 # pylint: disable=too-many-arguments
-def low_high_level_pattern_case_multi(timestamp: datetime,
+def low_high_level_pattern_case_multi(*, timestamp: datetime,
                                       changes: Changes,
                                       activity_params: AnnotationParams,
                                       counter: int,
@@ -342,12 +342,12 @@ def create_low_high_level_pattern_queries(changes: Changes,
                                                          counter,
                                                          siddhi_config))
         else:
-            queries.append(low_high_level_pattern_case_multi(timestamp,
-                                                             changes,
-                                                             activity_params,
-                                                             counter,
-                                                             sampling_freq,
-                                                             siddhi_config))
+            queries.append(low_high_level_pattern_case_multi(timestamp=timestamp,
+                                                             changes=changes,
+                                                             activity_params=activity_params,
+                                                             counter=counter,
+                                                             sampling_freq=sampling_freq,
+                                                             siddhi_config=siddhi_config))
 
         # High-Level Pattern queries
         queries.append(query_hlstream(
