@@ -14,7 +14,7 @@ class AllHighLevelPatternQuery(InstanceLevelDetQuery):
         ahli_query = (
             f'@info(name="Detect-AllHighLevelPattern-InstanceLevelActivity")\n'
             f'from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] '
-            f'-> not HelperStream[event == "HighToLow"] and '
+            f'-> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and '
             f'e2 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-{num_changes}"]\n'
             f'select "{act_name}" as activity, '
             f'"AllHighLevelPattern" as detection_type, '
@@ -37,7 +37,7 @@ class First50HighLevelPatternQuery(InstanceLevelDetQuery):
             ffpi_query = (
                 f'@info(name="Detect-First50HighLevelPattern-InstanceLevelActivity")\n'
                 f'from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] '
-                f'-> not HelperStream[event == "HighToLow"] '
+                f'-> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] '
                 f'and e2 = DetectedHighLevelActivityEvents'
                 f'[event == "HighLevel-Pattern-{ceil(num_changes / 2)}"]\n'
                 f'select "{act_name}" as activity, '

@@ -215,7 +215,7 @@ def query_hlstream(activity_params: AnnotationParams,
     if counter > 1:
         quer += (f'from every e1 = DetectedHighLevelActivityEvents[event == '
                  f'"HighLevel-Pattern-{counter - 1}"] '
-                 f'-> not HelperStream[event == "HighToLow"] and '
+                 f'-> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and '
                  f'e2 = DetectedLowLevelActivityEvents[event '
                  f'== "LowLevel-Pattern-{counter}" '
                  f'and time:timestampInMilliseconds(e1.ts_second, \'yyyy-MM-dd HH:mm:ss.SS\') '
