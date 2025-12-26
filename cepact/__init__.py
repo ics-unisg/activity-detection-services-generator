@@ -19,4 +19,4 @@ __all__ = ['DetServiceGenerator', 'DAGConfig', 'SiddhiConfig',
            'Any25LowLevelPatternQuery', 'Any50LowLevelPatternQuery',
            'Any75LowLevelPatternQuery', 'InstanceLevelDetQuery']
 
-__version__ = '0.1.1'
+__version__ = '0.2.0'
