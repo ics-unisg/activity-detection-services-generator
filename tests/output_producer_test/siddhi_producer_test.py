@@ -97,8 +97,8 @@ define Stream DetectedLowLevelActivityEvents(event string, activity string, ts_f
 define Stream DetectedHighLevelActivityEvents(event string, next_pattern string, activity string, ts_first string, ts_second string);
 
 @sink(type = 'log', prefix = 'InstanceLevel Log', priority = 'INFO')
-@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.start', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"start","time:timestamp":"{{ts_start}}", "detection:type": "{{detection_type}}"}""\")))
-@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.complete', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"complete","time:timestamp":"{{ts_end}}", "detection:type": "{{detection_type}}"}""\")))
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.start', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"start","time:timestamp":"{{ts_start}}", "detection:type": "{{detection_type}}", "stations": "station1"}""\")))
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.complete', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"complete","time:timestamp":"{{ts_end}}", "detection:type": "{{detection_type}}", "stations": "station1"}""\")))
 define Stream DetectedInstanceLevelActivities(activity string, detection_type string, ts_start string, ts_start_unix long, ts_end string, ts_end_unix long);"""
     assert sp._get_discretization_helpers() == """@info(name = 'station1DiscSourceMapper')
 from station1Stream

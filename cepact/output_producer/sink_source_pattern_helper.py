@@ -150,7 +150,9 @@ def define_sink(activity: Activity,
                 f'{option}'
                 '","time:timestamp":"{{'
                 f'{"ts_start" if option == "start" else "ts_end"}'
-                '}}", "detection:type": "{{detection_type}}"}""")))\n')
+                '}}", "detection:type": "{{detection_type}}", '
+                f'"stations": "{"-".join(activity.get_annotation_params().stations)}"'
+                '}""")))\n')
 
     sink += (f"@sink(type = 'log', prefix = 'InstanceLevel Log', priority = 'INFO')\n"
              f"{mqtt_xes_sink('start')}"
