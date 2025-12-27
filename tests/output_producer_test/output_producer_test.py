@@ -30,9 +30,9 @@ define Stream DetectedLowLevelActivityEvents(event string, activity string, ts_f
 define Stream DetectedHighLevelActivityEvents(event string, next_pattern string, activity string, ts_first string, ts_second string);
 
 @sink(type = 'log', prefix = 'InstanceLevel Log', priority = 'INFO')
-@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.start', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"start","time:timestamp":"{{ts_start}}", "detection:type": "{{detection_type}}", "stations": "station1"}""\")))
-@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.complete', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"complete","time:timestamp":"{{ts_end}}", "detection:type": "{{detection_type}}", "stations": "station1"}""\")))
-define Stream DetectedInstanceLevelActivities(activity string, detection_type string, ts_start string, ts_start_unix long, ts_end string, ts_end_unix long);
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.start', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"start","time:timestamp":"{{ts_start}}", "detection:type": "{{detection_type}}", "stations": "station1", "concept:instance": "{{act_inst_id}}"}""\")))
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.station1.paper act.il.complete', topic = 'DefaultBase/DefaultSource/DefaultCase/paper act', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload(""\"{"lifecycle:transition":"complete","time:timestamp":"{{ts_end}}", "detection:type": "{{detection_type}}", "stations": "station1", "concept:instance": "{{act_inst_id}}"}""\")))
+define Stream DetectedInstanceLevelActivities(activity string, detection_type string, ts_start string, ts_start_unix long, ts_end string, ts_end_unix long, act_inst_id string);
 
 @info(name = 'station1DiscSourceMapper')
 from station1Stream
@@ -76,7 +76,7 @@ insert into DetectedHighLevelActivityEvents;
 
 @info(name="Detect-AllHighLevelPattern-InstanceLevelActivity")
 from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and e2 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
-select "paper act" as activity, "AllHighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "paper act" as activity, "AllHighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 """
 

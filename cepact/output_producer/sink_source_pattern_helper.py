@@ -151,7 +151,8 @@ def define_sink(activity: Activity,
                 '","time:timestamp":"{{'
                 f'{"ts_start" if option == "start" else "ts_end"}'
                 '}}", "detection:type": "{{detection_type}}", '
-                f'"stations": "{"-".join(activity.get_annotation_params().stations)}"'
+                f'"stations": "{"-".join(activity.get_annotation_params().stations)}", '
+                '"concept:instance": "{{act_inst_id}}"'
                 '}""")))\n')
 
     sink += (f"@sink(type = 'log', prefix = 'InstanceLevel Log', priority = 'INFO')\n"
@@ -162,7 +163,8 @@ def define_sink(activity: Activity,
              f"ts_start string, "
              f"ts_start_unix long, "
              f"ts_end string, "
-             f"ts_end_unix long);")
+             f"ts_end_unix long, "
+             f"act_inst_id string);")
     return sink
 
 

@@ -15,9 +15,9 @@ define Stream DetectedLowLevelActivityEvents(event string, activity string, ts_f
 define Stream DetectedHighLevelActivityEvents(event string, next_pattern string, activity string, ts_first string, ts_second string);
 
 @sink(type = 'log', prefix = 'InstanceLevel Log', priority = 'INFO')
-@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.stat1.Burn.il.start', topic = 'DefaultBase/DefaultSource/DefaultCase/Burn', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload("""{"lifecycle:transition":"start","time:timestamp":"{{ts_start}}", "detection:type": "{{detection_type}}", "stations": "stat1"}""")))
-@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.stat1.Burn.il.complete', topic = 'DefaultBase/DefaultSource/DefaultCase/Burn', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload("""{"lifecycle:transition":"complete","time:timestamp":"{{ts_end}}", "detection:type": "{{detection_type}}", "stations": "stat1"}""")))
-define Stream DetectedInstanceLevelActivities(activity string, detection_type string, ts_start string, ts_start_unix long, ts_end string, ts_end_unix long);
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.stat1.Burn.il.start', topic = 'DefaultBase/DefaultSource/DefaultCase/Burn', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload("""{"lifecycle:transition":"start","time:timestamp":"{{ts_start}}", "detection:type": "{{detection_type}}", "stations": "stat1", "concept:instance": "{{act_inst_id}}"}""")))
+@sink(type = 'mqtt', url = 'mockurl', client.id = 'mqtt.stat1.Burn.il.complete', topic = 'DefaultBase/DefaultSource/DefaultCase/Burn', username = 'mockuser', password = 'mockpw', @map(type = 'json', enclosing.element = '$.event', validate.json = 'true', @payload("""{"lifecycle:transition":"complete","time:timestamp":"{{ts_end}}", "detection:type": "{{detection_type}}", "stations": "stat1", "concept:instance": "{{act_inst_id}}"}""")))
+define Stream DetectedInstanceLevelActivities(activity string, detection_type string, ts_start string, ts_start_unix long, ts_end string, ts_end_unix long, act_inst_id string);
 
 @info(name = 'stat1DiscSourceMapper')
 from stat1Stream
@@ -91,37 +91,37 @@ insert into DetectedHighLevelActivityEvents;
 
 @info(name="Detect-AllHighLevelPattern-InstanceLevelActivity")
 from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and e2 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-6"]
-select "Burn" as activity, "AllHighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "AllHighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-First50HighLevelPattern-InstanceLevelActivity")
 from every e1 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] -> not DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-1"] and e2 = DetectedHighLevelActivityEvents[event == "HighLevel-Pattern-3"]
-select "Burn" as activity, "First50HighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "First50HighLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-FirstLastLowLevelPattern-InstanceLevelActivity")
 from every e1 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-1"] -> not HelperStream[event == "HighToLow"] and e2 = DetectedLowLevelActivityEvents[event == "LowLevel-Pattern-6"]
-select "Burn" as activity, "FirstLastLowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "FirstLastLowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-Any25LowLevelPattern-InstanceLevelActivity-Startup")
 from e1 = DetectedLowLevelActivityEvents,
 	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
-select "Burn" as activity, "Any25LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "Any25LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e2.ts_second as ts_end, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-Any25LowLevelPattern-InstanceLevelActivity")
 from every e1 = DetectedLowLevelActivityEvents,
 	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num >= ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e3 = DetectedLowLevelActivityEvents[e2.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
-select "Burn" as activity, "Any25LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e3.ts_second as ts_end, time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "Any25LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e3.ts_second as ts_end, time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-Any50LowLevelPattern-InstanceLevelActivity-Startup")
 from e1 = DetectedLowLevelActivityEvents,
 	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e3 = DetectedLowLevelActivityEvents[e2.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
-select "Burn" as activity, "Any50LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e3.ts_second as ts_end, time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "Any50LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e3.ts_second as ts_end, time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-Any50LowLevelPattern-InstanceLevelActivity")
@@ -129,7 +129,7 @@ from every e1 = DetectedLowLevelActivityEvents,
 	e2 = DetectedLowLevelActivityEvents[e1.ll_pattern_num >= ll_pattern_num and time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e3 = DetectedLowLevelActivityEvents[e2.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e4 = DetectedLowLevelActivityEvents[e3.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
-select "Burn" as activity, "Any50LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e4.ts_second as ts_end, time:timestampInMilliseconds(e4.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "Any50LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e4.ts_second as ts_end, time:timestampInMilliseconds(e4.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-Any75LowLevelPattern-InstanceLevelActivity-Startup")
@@ -138,7 +138,7 @@ from e1 = DetectedLowLevelActivityEvents,
 	e3 = DetectedLowLevelActivityEvents[e2.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e4 = DetectedLowLevelActivityEvents[e3.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e5 = DetectedLowLevelActivityEvents[e4.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e4.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
-select "Burn" as activity, "Any75LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e5.ts_second as ts_end, time:timestampInMilliseconds(e5.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "Any75LowLevelPattern" as detection_type, e1.ts_second as ts_start, time:timestampInMilliseconds(e1.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e5.ts_second as ts_end, time:timestampInMilliseconds(e5.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;
 
 @info(name="Detect-Any75LowLevelPattern-InstanceLevelActivity")
@@ -148,5 +148,5 @@ from every e1 = DetectedLowLevelActivityEvents,
 	e4 = DetectedLowLevelActivityEvents[e3.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e3.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e5 = DetectedLowLevelActivityEvents[e4.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e4.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')],
 	e6 = DetectedLowLevelActivityEvents[e5.ll_pattern_num < ll_pattern_num and time:timestampInMilliseconds(e5.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') <= time:timestampInMilliseconds(ts_second, 'yyyy-MM-dd HH:mm:ss.SS')]
-select "Burn" as activity, "Any75LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e6.ts_second as ts_end, time:timestampInMilliseconds(e6.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix
+select "Burn" as activity, "Any75LowLevelPattern" as detection_type, e2.ts_second as ts_start, time:timestampInMilliseconds(e2.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_start_unix, e6.ts_second as ts_end, time:timestampInMilliseconds(e6.ts_second, 'yyyy-MM-dd HH:mm:ss.SS') as ts_end_unix, UUID() as act_inst_id
 insert into DetectedInstanceLevelActivities;

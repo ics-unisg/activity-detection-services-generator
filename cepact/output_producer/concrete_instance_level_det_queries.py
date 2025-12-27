@@ -21,7 +21,8 @@ class AllHighLevelPatternQuery(InstanceLevelDetQuery):
             f"e1.ts_second as ts_start, "
             f"time:timestampInMilliseconds(e1.ts_second, '{DATETIME_FORMAT}') as ts_start_unix, "
             f'e2.ts_second as ts_end, '
-            f"time:timestampInMilliseconds(e2.ts_second, '{DATETIME_FORMAT}') as ts_end_unix"
+            f"time:timestampInMilliseconds(e2.ts_second, '{DATETIME_FORMAT}') as ts_end_unix, "
+            f"UUID() as act_inst_id"
             f'\n'
             f'insert into DetectedInstanceLevelActivities;'
         )
@@ -46,7 +47,8 @@ class First50HighLevelPatternQuery(InstanceLevelDetQuery):
                 f"time:timestampInMilliseconds"
                 f"(e1.ts_second, '{DATETIME_FORMAT}') as ts_start_unix, "
                 f'e2.ts_second as ts_end, '
-                f"time:timestampInMilliseconds(e2.ts_second, '{DATETIME_FORMAT}') as ts_end_unix"
+                f"time:timestampInMilliseconds(e2.ts_second, '{DATETIME_FORMAT}') as ts_end_unix, "
+                f"UUID() as act_inst_id"
                 f'\n'
                 f'insert into DetectedInstanceLevelActivities;'
             )
@@ -60,7 +62,8 @@ class First50HighLevelPatternQuery(InstanceLevelDetQuery):
                 f"time:timestampInMilliseconds"
                 f"(e1.ts_second, '{DATETIME_FORMAT}') as ts_start_unix, "
                 f'e1.ts_second as ts_end, '
-                f"time:timestampInMilliseconds(e1.ts_second, '{DATETIME_FORMAT}') as ts_end_unix"
+                f"time:timestampInMilliseconds(e1.ts_second, '{DATETIME_FORMAT}') as ts_end_unix, "
+                f"UUID() as act_inst_id"
                 f'\n'
                 f'insert into DetectedInstanceLevelActivities;'
             )
@@ -84,7 +87,8 @@ class FirstLastLowLevelPatternQuery(InstanceLevelDetQuery):
             f'"FirstLastLowLevelPattern" as detection_type, e1.ts_second as ts_start, '
             f"time:timestampInMilliseconds(e1.ts_second, '{DATETIME_FORMAT}') as ts_start_unix, "
             f'e2.ts_second as ts_end, '
-            f"time:timestampInMilliseconds(e2.ts_second, '{DATETIME_FORMAT}') as ts_end_unix"
+            f"time:timestampInMilliseconds(e2.ts_second, '{DATETIME_FORMAT}') as ts_end_unix, "
+            f"UUID() as act_inst_id"
             f'\n'
             f'insert into DetectedInstanceLevelActivities;'
         )
@@ -125,7 +129,8 @@ def create_any_quartile_low_level_instance_query(num_changes: int,
         f"time:timestampInMilliseconds(e1.ts_second, '{DATETIME_FORMAT}') as ts_start_unix, "
         f'e{upper_bound}.ts_second as ts_end, '
         f"time:timestampInMilliseconds(e{upper_bound}.ts_second, "
-        f"'{DATETIME_FORMAT}') as ts_end_unix"
+        f"'{DATETIME_FORMAT}') as ts_end_unix, "
+        f"UUID() as act_inst_id"
         f'\n')
     afpi_query += 'insert into DetectedInstanceLevelActivities;\n\n'
 
@@ -164,7 +169,8 @@ def create_any_quartile_low_level_instance_query(num_changes: int,
         f"time:timestampInMilliseconds(e2.ts_second, '{DATETIME_FORMAT}') as ts_start_unix, "
         f'e{upper_bound + 1}.ts_second as ts_end, '
         f"time:timestampInMilliseconds(e{upper_bound + 1}.ts_second, "
-        f"'{DATETIME_FORMAT}') as ts_end_unix"
+        f"'{DATETIME_FORMAT}') as ts_end_unix, "
+        f"UUID() as act_inst_id"
         f'\n')
     afpi_query += 'insert into DetectedInstanceLevelActivities;'
     return afpi_query
